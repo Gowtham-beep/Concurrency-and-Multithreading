@@ -15,7 +15,7 @@ public class StockFetcher {
 
         CompletableFuture<String> future = CompletableFuture.supplyAsync(()->{
             if(true) throw new RuntimeException("API Failed");
-            return "Some price";
+            return "Some price"; 
 
         }).exceptionally(ex->"Default price used: 999");
         all.join(); // block until all complete
