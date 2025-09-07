@@ -1,0 +1,113 @@
+import java.io.*;
+import java.util.*;
+import java.util.stream.*;
+
+// Student must be Serializable if we want to save to file
+class Student implements Serializable {
+    private String name;
+    private int age;
+    private double grade;
+
+    Student(String name, int age, double grade) {
+        this.name = name;
+        this.age = age;
+        this.grade = grade;
+    }
+
+    public String getName() { return name; }
+    public int getAge() { return age; }
+    public double getGrade() { return grade; }
+
+    @Override
+    public String toString() {
+        return name + " (Age: " + age + ", Grade: " + grade + ")";
+    }
+}
+
+// Functional interface (for custom filtering logic)
+@FunctionalInterface
+interface StudentFilter {
+    boolean test(Student s);
+}
+
+// Custom collection that is Iterable
+class StudentDatabase implements Iterable<Student>, Serializable {
+    private List<Student> students = new ArrayList<>();
+
+    public void addStudent(Student s) { students.add(s); }
+
+    // Streams: filter students by StudentFilter
+    public List<Student> filter(StudentFilter filter) {
+        return students.stream()
+                       .filter(filter::test)
+                       .collect(Collectors.toList());
+    }
+
+    // Streams + Comparator: sort students by grade
+    public List<Student> sortByGrade() {
+        return students.stream()
+                       .sorted(Comparator.comparingDouble(Student::getGrade).reversed())
+                       .collect(Collectors.toList());
+    }
+
+    // Optional: get top scorer if exists
+    public Optional<Student> topScorer() {
+        return students.stream()
+                       .max(Comparator.comparingDouble(Student::getGrade));
+    }
+
+    // Implement Iterable
+    @Override
+    public Iterator<Student> iterator() {
+        return students.iterator();
+    }
+
+    // Serialization helpers
+    public void saveToFile(String filename) throws IOException {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filename))) {
+            oos.writeObject(this);
+        }
+    }
+
+    public static StudentDatabase loadFromFile(String filename) throws IOException, ClassNotFoundException {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filename))) {
+            return (StudentDatabase) ois.readObject();
+        }
+    }
+}
+
+// Demo
+public class StudentDemo {
+    public static void main(String[] args) throws Exception {
+        StudentDatabase db = new StudentDatabase();
+        db.addStudent(new Student("Alice", 20, 85.5));
+        db.addStudent(new Student("Bob", 22, 91.0));
+        db.addStudent(new Student("Charlie", 19, 72.3));
+
+        // Iterable (for-each loop)
+        System.out.println("All students:");
+        for (Student s : db) {
+            System.out.println(s);
+        }
+
+        // Filter (Functional Interface + Streams)
+        System.out.println("\nStudents older than 20:");
+        db.filter(s -> s.getAge() > 20).forEach(System.out::println);
+
+        // Sort (Comparator + Streams)
+        System.out.println("\nSorted by grade:");
+        db.sortByGrade().forEach(System.out::println);
+
+        // Optional (Top scorer)
+        System.out.println("\nTop scorer:");
+        db.topScorer().ifPresent(System.out::println);
+
+        // Serialization
+        db.saveToFile("students.ser");
+        StudentDatabase loaded = StudentDatabase.loadFromFile("students.ser");
+        System.out.println("\nLoaded from file:");
+        for (Student s : loaded) {
+            System.out.println(s);
+        }
+    }
+}
