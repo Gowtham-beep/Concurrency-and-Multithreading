@@ -1,0 +1,73 @@
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Comparator;
+
+public class ComparatorExample {
+
+    public static void main(String[] args) {
+        List<Person> people = new ArrayList<>();
+        people.add(new Person("Alice", 30));
+        people.add(new Person("Charlie", 25));
+        people.add(new Person("Bob", 35));
+        people.add(new Person("David", 25));
+
+        System.out.println("Original List:");
+        people.forEach(System.out::println);
+        
+        // ---- Sorting by Age using an anonymous class (Pre-Java 8) ----
+        Comparator<Person> byAgeComparator = new Comparator<Person>() {
+            @Override
+            public int compare(Person p1, Person p2) {
+                return Integer.compare(p1.getAge(), p2.getAge());
+            }
+        };
+        Collections.sort(people, byAgeComparator);
+        
+        System.out.println("\nSorted by Age (Ascending):");
+        people.forEach(System.out::println);
+        
+        // ---- Sorting by Name using a Lambda Expression (Java 8+) ----
+        // This is the modern and preferred way to use Comparator
+        Comparator<Person> byNameComparator = (p1, p2) -> p1.getName().compareTo(p2.getName());
+        Collections.sort(people, byNameComparator);
+        
+        System.out.println("\nSorted by Name (Alphabetical):");
+        people.forEach(System.out::println);
+        
+        // ---- Sorting with multiple criteria using Comparator chaining ----
+        // Sort by age, then by name for people with the same age
+        Comparator<Person> byAgeThenName = Comparator.comparing(Person::getAge)
+                                                    .thenComparing(Person::getName);
+        
+        Collections.sort(people, byAgeThenName);
+        
+        System.out.println("\nSorted by Age, then Name:");
+        people.forEach(System.out::println);
+        
+        // Output will be:
+        // Original List:
+        // Person{name='Alice', age=30}
+        // Person{name='Charlie', age=25}
+        // Person{name='Bob', age=35}
+        // Person{name='David', age=25}
+        
+        // Sorted by Age (Ascending):
+        // Person{name='Charlie', age=25}
+        // Person{name='David', age=25}
+        // Person{name='Alice', age=30}
+        // Person{name='Bob', age=35}
+        
+        // Sorted by Name (Alphabetical):
+        // Person{name='Alice', age=30}
+        // Person{name='Bob', age=35}
+        // Person{name='Charlie', age=25}
+        // Person{name='David', age=25}
+        
+        // Sorted by Age, then Name:
+        // Person{name='Charlie', age=25}
+        // Person{name='David', age=25}
+        // Person{name='Alice', age=30}
+        // Person{name='Bob', age=35}
+    }
+}
